@@ -24,7 +24,7 @@ return function(x, y, angle, speed)
 			local center_y = self.hitbox:getCenterY()
 			local x_dir = math.cos(self.angle)
 			local y_dir = math.sin(self.angle)
-			local length = 10
+			local length = 30
 
 			love.graphics.setColor({1, 1, 1})
 			love.graphics.line(

@@ -14,12 +14,13 @@ return function(name, x, y, color)
 		color = color,
 
 		look_dir = 0,
+		speed = 3,
 		
 		inv = { "glock" },
 		inv_item = 1,
+		ammo = 64,
 
-		shoot_timespan = TimeSpan(0),
-		-- animation_shoot_timespan = TimeSpan(1, 0.1),
+		shoot_timespan = TimeSpan(8),
 		anim_shoot_angle = 0,
 
 		update = function(self, dt)
@@ -38,15 +39,26 @@ return function(name, x, y, color)
 			
 			local dir_x = Cast.ToNumber(key_right) - Cast.ToNumber(key_left)
 			
-			self.hitbox.x = self.hitbox.x + dir_x
+			self.hitbox.x = self.hitbox.x + dir_x * self.speed
 			self.look_dir = math.atan2(mouse_y - self.hitbox.y, mouse_x - self.hitbox.x)
 			-- print(self.look_dir)
 
 			if self.shoot_timespan:finished() then
-				if love.mouse.isDown(1) then
+				if love.mouse.isDown(1) and self.ammo > 0 then
+					local center_x = self.hitbox:getCenterX()
+					local center_y = self.hitbox:getCenterY()
+					local joint = assets.joints[self.inv[self.inv_item]]
+					local scale_delta = 1
+		
+					if mouse_x < self.hitbox.x then
+						scale_delta = -1
+					end
+
 					self.shoot_timespan:reset()
 					self.anim_shoot_angle = 1
-					world:add( Bullet(self.hitbox.x, self.hitbox.y, self.look_dir, 4) )
+					world:add( Bullet(center_x + joint.shoot_x * 0.2 * scale_delta, self.hitbox.y + joint.shoot_y * 0.2, self.look_dir, 20) )
+
+					self.ammo = self.ammo - 1
 				end
 			end
 		end,
@@ -87,6 +99,18 @@ return function(name, x, y, color)
 				local y = math.sin(self.look_dir) * debug.dir_length + center_y
 				
 				love.graphics.line(center_x, center_y, x, y)
+			end
+		end,
+
+		collides = function(self, obj)
+			if OOP.getClass(obj) == "AmmoBox" then
+				self.ammo = self.ammo + obj.ammo
+
+				if obj.destroy then
+					obj:destroy()
+				end
+				
+				world:remove(obj)
 			end
 		end
 	})
