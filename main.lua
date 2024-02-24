@@ -1,7 +1,9 @@
 local lg = love.graphics
 local Color = require("source/Color")
 local World = require("source/obj/World")
+local Crosshair = require("source/obj/Crosshair")
 local Player = require("source/obj/Player")
+local Bullet = require("source/obj/Bullet")
 local AmmoBox = require("source/obj/AmmoBox")
 
 function love.load()
@@ -16,9 +18,15 @@ function love.load()
 		glock = lg.newImage("assets/glock.png")
 	}
 
-	world = World()
-	world:add( Player("Player01", 20, 70, Color.BLUE) )
-	world:add( AmmoBox(80, 70, 100))
+	world = World:new()
+	world:add( Player:new("Player01", 20, 70, Color.BLUE) )
+	world:add( Player:new("Player02", 400, 70, Color.GREEN) )
+	world:add( AmmoBox:new(80, 70, 100))
+	world:add( Bullet:new(100, 70, -3.25, 10, 1) )
+	world:add( Crosshair:new(love.graphics.newImage("assets/crosshair01.png")) )
+
+	world.objects[1].inv = { "glock" }
+	world.objects[2].inv = { "glock" }
 end
 
 function love.update(dt)
@@ -30,6 +38,7 @@ function love.draw()
 	world:render(debug)
 
 	lg.print("Ammo: " .. world.objects[1].ammo, 10, lg.getHeight() - (10 + 14))
+	lg.print("Health: " .. world.objects[1].health, 10, lg.getHeight() - (10 + 14 * 2))
 
 	if debug.fps_enabled then
 		lg.print("FPS: " .. love.timer.getFPS())
@@ -44,4 +53,8 @@ function love.keypressed(key)
 	if key == "f3" then
 		debug.fps_enabled = not debug.fps_enabled
 	end
+end
+
+function love.errhand(error)
+	love.window.showMessageBox("Lua runtime error", error, "error")
 end

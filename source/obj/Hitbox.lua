@@ -1,42 +1,57 @@
 local Color = require("source/Color")
-local OOP = require("../../util/OOP")
 
-return function(x, y, width, height)
-	return OOP.class("Hitbox",
-	{
-		x = x,
-		y = y,
-		width = width,
-		height = height,
+local Hitbox = { _class = "Hitbox" }
+Hitbox.__index = Hitbox
 
-		render = function(self, color, mode)
-			local color = color or Color.WHITE
-			local mode = mode or "line"
+Hitbox.x = 0
+Hitbox.y = 0
+Hitbox.width = 0
+Hitbox.height = 0
+Hitbox.angle = 0
 
-			love.graphics.setColor(color)
-			love.graphics.rectangle(
-				mode,
-				self.x, self.y,
-				self.width, self.height
-			)
-		end,
+function Hitbox:new(x, y, width, height, angle)
+	local this = setmetatable({}, self)
 
-		getCenterX = function(self)
-			return self.x + (self.width / 2)
-		end,
+	this.x = x
+	this.y = y
+	this.width = width
+	this.height = height
+	this.angle = angle or 0
 
-		getCenterY = function(self)
-			return self.y + (self.height / 2)
-		end,
-
-		collides = function(self, obj)
-			local x1, y1, w1, h1 = self.x, self.y, self.width, self.height
-			local x2, y2, w2, h2 = obj.x, obj.y, obj.width, obj.height
-			
-			return x1 < x2+w2 and
-				x2 < x1+w1 and
-				y1 < y2+h2 and
-				y2 < y1+h1
-		end
-	})
+	return this
 end
+
+function Hitbox:get_center_x()
+	return self.x + (self.width / 2)
+end
+
+function Hitbox:get_center_y()
+	return self.y + (self.height / 2)
+end
+
+function Hitbox:collides(hitbox)
+	local x1, y1, w1, h1 = self.x, self.y, self.width, self.height
+	local x2, y2, w2, h2 = hitbox.x, hitbox.y, hitbox.width, hitbox.height
+	
+	return x1 < x2+w2 and
+		x2 < x1+w1 and
+		y1 < y2+h2 and
+		y2 < y1+h1
+end
+
+function Hitbox:update(dt)
+end
+
+function Hitbox:render(color, mode)
+	local color = color or Color.WHITE
+	local mode = mode or "line"
+
+	love.graphics.setColor(color)
+	love.graphics.rectangle(
+		mode,
+		self.x, self.y,
+		self.width, self.height
+	)
+end
+
+return Hitbox

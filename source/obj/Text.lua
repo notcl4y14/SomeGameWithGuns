@@ -1,18 +1,25 @@
-local OOP = require("../../util/OOP")
 local Hitbox = require("source/obj/Hitbox")
 
-return function(text, x, y, prop, update)
-	return OOP.class("Text",
-	{
-		hitbox = Hitbox(x, y, #text * 6, 14),
-		text = text,
-		prop = prop,
+local Text = { _class = "Text" }
+Text.__index = Text
 
-		update = update or function(self, dt)
-		end,
+Text.text = ""
+Text.hitbox = nil
 
-		render = function(self, debug)
-			love.graphics.print(self.text, self.hitbox.x, self.hitbox.y)
-		end
-	})
+function Text:new(text, x, y)
+	local this = setmetatable({}, self)
+
+	this.text = text
+	this.hitbox = Hitbox:new(x, y, #text * 6, 14)
+
+	return this
 end
+
+function Text:update(dt)
+end
+
+function Text:render(debug)
+	love.graphics.print(self.text, self.hitbox.x, self.hitbox.y)
+end
+
+return Text

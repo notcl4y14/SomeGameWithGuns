@@ -1,29 +1,37 @@
-local OOP = require("../../util/OOP")
+local TimeSpan = { _class = "TimeSpan" }
+TimeSpan.__index = TimeSpan
 
-return function(max, inc, loop)
-	return OOP.class("TimeSpan",
-	{
-		value = 0,
-		max = max,
-		inc = inc or 1,
-		loop = loop or false,
+TimeSpan.value = 0
+TimeSpan.max = 0
+TimeSpan.inc = 1
+TimeSpan.loop = false
 
-		update = function(self, dt)
-			if self.value <= self.max then
-				self.value = self.value + 1
-			end
-			
-			if self.value > self.max and self.loop then
-				self.reset()
-			end
-		end,
+function TimeSpan:new(max, inc, loop)
+	local this = setmetatable({}, self)
 
-		reset = function(self)
-			self.value = 0
-		end,
+	this.max = max
+	this.inc = inc or self.inc
+	this.loop = loop or self.loop
 
-		finished = function(self)
-			return self.value > self.max
-		end
-	})
+	return this
 end
+
+function TimeSpan:reset()
+	self.value = 0
+end
+
+function TimeSpan:finished()
+	return self.value > self.max
+end
+
+function TimeSpan:update(dt)
+	if self.value <= self.max then
+		self.value = self.value + 1
+	end
+	
+	if self.value > self.max and self.loop then
+		self.reset()
+	end
+end
+
+return TimeSpan

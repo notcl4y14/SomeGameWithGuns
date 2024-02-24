@@ -1,48 +1,78 @@
-local OOP = require("../../util/OOP")
+-- local OOP = require("../../util/OOP")
+local World = { _class = "World" }
+World.__index = World
 
-return function()
-	return OOP.class("World",
-	{
-		objects = {},
+World.objects = {}
 
-		update = function(self, dt)
-			for _, obj in pairs(self.objects) do
-				if obj.update then
-					obj:update(dt)
-				else
-					print("Warning: Object '" .. OOP.getClass(obj) .. "' does not have an update function")
-				end
+function World:new()
+	local this = setmetatable({}, self)
+	return this
+end
 
-				for _, obj2 in pairs(self.objects) do
-					if obj ~= obj2 and obj.hitbox:collides(obj2.hitbox) and obj.collides then
-						obj:collides(obj2)
-					end
-				end
-			end
-		end,
+function World:add(obj)
+	table.insert(self.objects, obj)
+end
 
-		render = function(self, hitbox)
-			local hitbox = hitbox or false
+function World:search(obj)
+	for key, value in pairs(self.objects) do
+		if value == obj then
+			return obj, key
+		end
+	end
 
-			for _, obj in pairs(self.objects) do
-				if obj.render then
-					obj:render(hitbox)
-				else
-					print("Warning: Object '" .. OOP.getClass(obj) .. "' does not have a render function")
-				end
-			end
-		end,
+	return nil, nil
+end
 
-		add = function(self, obj)
-			table.insert(self.objects, obj)
-		end,
+function World:remove(obj)
+	local _, key = self:search(obj)
 
-		remove = function(self, obj)
-			for key, value in pairs(self.objects) do
-				if value == obj then
-					table.remove(self.objects, key)
-				end
+	if not key then
+		return
+	end
+	
+	table.remove(self.objects, key)
+end
+
+function World:destroy(obj)
+	local obj, key = self:search(obj)
+
+	if not key then
+		return
+	end
+
+	if obj.destroy then
+		obj:destroy()
+	end
+
+	table.remove(self.objects, key)
+end
+
+function World:update(dt)
+	for _, obj in pairs(self.objects) do
+		if obj.update then
+			obj:update(dt)
+		else
+			print("Warning: Object '" .. OOP.getClass(obj) .. "' does not have an update function")
+		end
+
+		for _, obj2 in pairs(self.objects) do
+			if obj ~= obj2 and obj.hitbox:collides(obj2.hitbox) and obj.on_collide then
+				obj:on_collide(obj2)
 			end
 		end
-	})
+	end
 end
+
+function World:render(hitbox)
+	local hitbox = hitbox or false
+
+	for _, obj in pairs(self.objects) do
+		if obj.render then
+			obj:render(hitbox)
+		else
+			print("Warning: Object '" .. OOP.getClass(obj) .. "' does not have a render function")
+		end
+	end
+end
+
+return World
